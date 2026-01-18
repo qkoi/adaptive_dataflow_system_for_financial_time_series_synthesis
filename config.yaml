@@ -1,0 +1,399 @@
+﻿# =============================================================================
+# MASTER CONFIGURATION: "History Is Not Enough" Adaptive Dataflow System
+# =============================================================================
+# IMPORTANT: Values explicitly specified in the manuscript are set numerically.
+# Any element not specified in the excerpt is marked as REQUIRED_FROM_CODE
+# (must be filled to reproduce the authors' exact reported numbers).
+# =============================================================================
+
+# -------------------------------------------------------------------------
+# 0. GLOBAL REPRODUCIBILITY / PROVENANCE
+# -------------------------------------------------------------------------
+reproducibility:
+  device: "RTX_4090"                 # Paper: experiments run on RTX 4090
+  random_seed: "REQUIRED_FROM_CODE"  # Must be fixed and logged
+  log_provenance: true               # Paper: provenance-aware replay
+  provenance_fields:
+    - "alpha"
+    - "p"
+    - "lambda"
+    - "ops"
+    - "target_ticker_b"
+
+# -------------------------------------------------------------------------
+# 1. RAW DATA INGESTION SCHEMAS (Unprocessed Input State)
+# -------------------------------------------------------------------------
+data_schemas:
+  US_Stocks_Daily:
+    description: "27 DJIA components (2000-01-01 to 2024-01-01)"
+    index_levels:
+      - "date"
+      - "ticker"
+    required_tickers: "REQUIRED_FROM_CODE"
+    start_date: "2000-01-01"
+    end_date: "2024-01-01"
+    frequency: "1D"
+    columns:
+      Open:
+        dtype: "float64"
+        constraint: "Must be > 0"
+      High:
+        dtype: "float64"
+        constraint: "Must be >= max(Open, Close) after curation"
+      Low:
+        dtype: "float64"
+        constraint: "Must be <= min(Open, Close) after curation"
+      Close:
+        dtype: "float64"
+        constraint: "Must be > 0"
+      AdjClose:
+        dtype: "float64"
+        constraint: "Must be > 0 (required for RL P_t)"
+      Volume:
+        dtype: "int64|float64"
+        constraint: "Must be >= 0"
+      technical_indicators:
+        dtype: "float64"
+        constraint: "REQUIRED_FROM_CODE (exact list)"
+    source_ref: "Experiments: Datasets"
+
+  Crypto_Hourly:
+    description: "BTC, ETH, DOT, LTC (2023-09-27 to 2025-09-26)"
+    index_levels:
+      - "date"
+      - "ticker"
+    required_tickers:
+      - "BTC"
+      - "ETH"
+      - "DOT"
+      - "LTC"
+    start_date: "2023-09-27"
+    end_date: "2025-09-26"
+    frequency: "1H"
+    columns:
+      Open:
+        dtype: "float64"
+        constraint: "Must be > 0"
+      High:
+        dtype: "float64"
+        constraint: "Must be >= max(Open, Close) after curation"
+      Low:
+        dtype: "float64"
+        constraint: "Must be <= min(Open, Close) after curation"
+      Close:
+        dtype: "float64"
+        constraint: "Must be > 0"
+      AdjClose:
+        dtype: "float64"
+        constraint: "Optional; if absent set AdjClose==Close explicitly"
+      Volume:
+        dtype: "float64"
+        constraint: "Must be >= 0"
+      technical_indicators:
+        dtype: "float64"
+        constraint: "REQUIRED_FROM_CODE (exact list)"
+    source_ref: "Experiments: Datasets"
+
+# -------------------------------------------------------------------------
+# 2. DATA PRE-PROCESSING & SPLITTING PARAMETERS
+# -------------------------------------------------------------------------
+preprocessing:
+  lookback_window: 60                 # Paper: forecasting uses 60-step lookback
+  target_type: "OneStepCloseReturn"   # y_t = (C_{t+1}-C_t)/C_t
+  target_formula: "y_t=(C_{t+1}-C_t)/C_t"
+
+  split_ratios:
+    train: 0.6
+    valid: 0.2
+    test: 0.2
+
+  # Rolling protocols explicitly used in Val–Test proximity analysis
+  rolling_protocol:
+    stocks_step: "1 Year"           # Paper
+    crypto_step: "1 Month"           # Paper
+
+  # Leakage control (explicit requirement in paper)
+  leakage_control:
+    train_only_statistics: true
+    forbid_future_in_rolling: true
+
+  # Normalization (paper mentions rolling-window standard normalization but omits window length)
+  normalization:
+    method: "ZScore"
+    scope: "REQUIRED_FROM_CODE"         # e.g., "rolling" vs "global_train"
+    rolling_window: "REQUIRED_FROM_CODE"
+    per_ticker: true
+
+  # Tensorization rules (required for (T, S, F) construction)
+  alignment_policy:
+    timestamp_join: "REQUIRED_FROM_CODE"  # e.g., intersection vs union
+    missing_data_policy: "REQUIRED_FROM_CODE"  # drop/ffill/etc (must be leakage-safe)
+
+# -------------------------------------------------------------------------
+# 3. ECONOMETRIC ESTIMATION (Cointegration p-values for Algorithm 1)
+# -------------------------------------------------------------------------
+econometrics:
+  cointegration:
+    method: "REQUIRED_FROM_CODE"      # Engle-Granger vs Johansen (not specified in excerpt)
+    price_field: "Close"              # or "AdjClose" (must be specified)
+    transform: "REQUIRED_FROM_CODE"   # e.g., "log" or "level"
+    pvalue_matrix_scope: "train_only" # Paper: computed within training set only
+    topk_candidates: "REQUIRED_FROM_CODE"  # k in Algorithm 1
+
+# -------------------------------------------------------------------------
+# 4. TASK MODEL ARCHITECTURES (Forecasting)
+# -------------------------------------------------------------------------
+task_models:
+  common:
+    optimizer: "Adam"
+    learning_rate: 0.001              # Paper
+    output_dim: 1                     # next-step return
+    feature_extractor_head_split: true # Paper: must expose j(.) and k(.)
+    penultimate_fc_required: true      # Paper: extract second-to-last FC embedding
+
+  # NOTE: Only the explicitly stated hyperparameters are fixed here.
+  # Layer counts/heads/etc are not specified in the excerpt; must match authors' code.
+  GRU:
+    hidden_dim: 512
+    batch_size: 128
+    patience: 5
+    architecture_details: "REQUIRED_FROM_CODE"
+  
+  LSTM:
+    hidden_dim: 512
+    batch_size: 256
+    patience: 5
+    architecture_details: "REQUIRED_FROM_CODE"
+  
+  TCN:
+    hidden_dim: 512
+    batch_size: 128
+    patience: 5
+    architecture_details: "REQUIRED_FROM_CODE"
+  
+  Transformer:
+    hidden_dim: 256
+    batch_size: 256
+    patience: 5
+    architecture_details: "REQUIRED_FROM_CODE"
+  
+  DLinear:
+    hidden_dim: 512
+    batch_size: 1024
+    patience: 8
+    architecture_details: "REQUIRED_FROM_CODE"
+
+# -------------------------------------------------------------------------
+# 5. ADAPTIVE PLANNER CONFIGURATION (Controller Network g_phi)
+# -------------------------------------------------------------------------
+planner:
+  architecture: "Transformer"          # Paper
+  input_dim: 128                       # Paper
+  learning_rate: 0.001                 # Paper
+
+  # Risk-aware loss term in paper: L = E(loss) + gamma * sigma(loss)
+  sharpe_loss_gamma: 0.05              # Paper text
+
+  # Planner state definition (paper describes model embedding + data statistics)
+  state_features:
+    model_embedding_source: "penultimate_fc"  # Paper
+    data_descriptors:
+      - "mean"
+      - "volatility"
+      - "momentum"
+      - "skewness"
+      - "kurtosis"
+      - "trend"
+    descriptor_scope: "REQUIRED_FROM_CODE"     # per-feature/per-channel aggregation rules
+
+  # Model-specific update schedules (Paper: freq and start epoch)
+  GRU:
+    layers: 2
+    hidden_dim: 256
+    update_freq: 15
+    start_epoch: 10
+  
+  LSTM:
+    layers: 2
+    hidden_dim: 256
+    update_freq: 5
+    start_epoch: 5
+  
+  TCN:
+    layers: 2
+    hidden_dim: 256
+    update_freq: 10
+    start_epoch: 2
+  
+  DLinear:
+    layers: 5
+    hidden_dim: 256
+    update_freq: 8
+    start_epoch: 2
+  
+  Transformer:
+    layers: 2
+    hidden_dim: 128
+    update_freq: 5
+    start_epoch: 2
+
+# -------------------------------------------------------------------------
+# 6. SCHEDULER & CURRICULUM PARAMETERS (Algorithm: Proportion alpha Scheduler)
+# -------------------------------------------------------------------------
+scheduler:
+  rate_penalty_active: 0.1          # Algorithm 3
+  rate_penalty_inactive: 1.0        # Algorithm 3
+  min_alpha_increment: 0.01         # Algorithm 3
+  max_alpha: 1.0                    # Algorithm 3
+  tau:
+    DLinear: 30
+    GRU: 14
+    LSTM: 5
+    TCN: 5
+    Transformer: 5
+
+  # Early stopping counter mechanics are required inputs but not specified in excerpt
+  early_stopping:
+    definition: "REQUIRED_FROM_CODE"    # how C_es and C_les are updated
+    improvement_threshold: "REQUIRED_FROM_CODE"
+
+# -------------------------------------------------------------------------
+# 7. DATA MANIPULATION MODULE M (Operations + Algorithms 1 & 2)
+# -------------------------------------------------------------------------
+manipulation_module:
+  # K-line constraint enforced after transformations/mixups
+  kline_constraint: "L<=min(O,C)<=max(O,C)<=H"
+
+  # Operation sets (Paper: listed operations)
+  operations:
+    single_stock:
+      - "Jittering"
+      - "Scaling"
+      - "MagnitudeWarping"
+      - "Permutation"
+      - "STL_Augmentation"
+    multi_stock:
+      - "CutMix"
+      - "LinearMix"
+      - "AmplitudeMix"
+      - "Demirel_Holz_Mix"
+
+  # Parameterization mappings are required but not fully specified in excerpt
+  operation_parameterization: "REQUIRED_FROM_CODE"
+
+  # Mix-up Target Sampling Algorithm 1 controls
+  mixup_target_sampling:
+    cointegration_threshold_lambda: 0.5      # Algorithm 1 piecewise split
+    topk_candidates: "REQUIRED_FROM_CODE"      # k must match econometrics.cointegration.topk_candidates
+
+  # Binary Mix (Algorithm 2) controls
+  binary_mix:
+    b_max: 1.0                                 # Input required by Algorithm 2
+    mi_estimator: "REQUIRED_FROM_CODE"          # not specified in excerpt
+    mi_estimator_params: "REQUIRED_FROM_CODE"   # bins/kNN-k/etc
+    feature_selection_rule: "random_feature_k"   # Algorithm 2: randomly select feature k
+
+# -------------------------------------------------------------------------
+# 8. BASELINES (Workflow benchmarks)
+# -------------------------------------------------------------------------
+baselines:
+  Original:
+    use_manipulation: false
+  RandAugment:
+    alpha: 0.5
+    lambda_policy: "fixed_1"
+    operation_policy: "random"
+  TrivialAugment:
+    alpha: 0.5
+    lambda_policy: "random"
+    operation_policy: "random"
+  AdaAug:
+    alpha: 0.5
+    planner_controls:
+      - "p"
+      - "lambda"
+    scheduler_enabled: false
+  Ours:
+    planner_enabled: true
+    scheduler_enabled: true
+    mixup_enabled: true
+  Ours_wo_mixup:
+    planner_enabled: true
+    scheduler_enabled: true
+    mixup_enabled: false
+
+# -------------------------------------------------------------------------
+# 9. EVALUATION CONFIG (Proximity, Fidelity, Stylized Facts, t-SNE)
+# -------------------------------------------------------------------------
+evaluation:
+  proximity_metrics:
+    psi:
+      bins_k: "REQUIRED_FROM_CODE"
+    ks:
+      mode: "REQUIRED_FROM_CODE"           # per-feature vs pooled
+    mmd:
+      kernel: "RBF"
+      bandwidth: "REQUIRED_FROM_CODE"  # Paper: RBF kernel, bandwidth unspecified
+
+  forecasting_metrics:
+    - "MSE"
+    - "MAE"
+    - "STD_loss_over_test_horizon"
+
+  trading_metrics:
+    - "TR"
+    - "SR"
+
+  discriminative_score:
+    classifier: "posthoc_RNN"
+    classifier_architecture: "REQUIRED_FROM_CODE"
+    score_definition: "AccuracyMinus50Percent"
+
+  stylized_facts:
+    return_definition: "close_to_close_return"
+    acf_lags: "REQUIRED_FROM_CODE"
+    leverage_volatility_proxy: "REQUIRED_FROM_CODE"  # sigma_{t+k} definition not specified in excerpt
+
+  tsne:
+    perplexity: 30     # implied by figure filenames (perp30)
+    n_iter: 500        # implied by figure filenames (iter500)
+    random_state: "REQUIRED_FROM_CODE"
+
+# -------------------------------------------------------------------------
+# 10. REINFORCEMENT LEARNING (Environment + Agent Hyperparameters)
+# -------------------------------------------------------------------------
+rl_environment:
+  transaction_cost: 0.001     # Paper
+  action_space:
+    - -1
+    - 0
+    - 1
+  valuation_price_field: "AdjClose"  # must map to P_t in Part 2
+
+  # RL transfer schedule for alpha (explicit in Part 2)
+  transfer_alpha_schedule:
+    - steps: 200000
+      alpha: 0.0
+    - steps: 100000
+      alpha: 0.05
+    - steps: "REMAINDER"
+      alpha: 0.0
+
+  DQN:
+    embedding_dim: 128
+    depth: 1
+    initial_capital: 10000.0
+    discount_gamma: 0.99
+    policy_lr: 0.00025
+    exploration_fraction: 0.5
+    train_freq: 10
+    batch_size: 128
+    target_update_freq: 500
+
+  PPO:
+    policy_lr: 5.0e-7
+    value_lr: 1.0e-6
+    gae_lambda: 0.95
+    value_coef: 0.5
+    entropy_coef: 0.01
+    target_kl: 0.02
