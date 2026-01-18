@@ -1,0 +1,214 @@
+﻿# ========================================================================================
+# Requirements File for Adaptive Dataflow System for Financial Time-Series Synthesis
+# ========================================================================================
+#
+# This requirements.txt specifies all dependencies for the production-grade implementation
+# of the adaptive dataflow system presented in "History Is Not Enough: An Adaptive
+# Dataflow System for Financial Time-Series Synthesis" by Haochong Xia et al. (2026).
+#
+# The system implements bi-level optimization, cointegration-aware data augmentation,
+# curriculum learning, and reinforcement learning for algorithmic trading under
+# non-stationary market conditions.
+#
+# Installation:
+#   pip install -r requirements.txt
+#
+# Python Version Requirement: >=3.8,<3.12
+#
+# Author: CS Chirinda
+# Version: 1.0.0
+# License: MIT
+# ========================================================================================
+
+# ==============================================================================
+# Core Scientific Computing Stack
+# ==============================================================================
+
+# Numerical computation foundation - vectorized operations, FFT, broadcasting
+# Used for: efficient array operations, frequency-domain signal processing,
+# statistical moment calculations, sliding window operations
+numpy>=1.24.0,<2.0.0
+
+# High-performance dataframe operations and time-series data structures
+# Used for: OHLCV data representation, rolling window protocols, time-indexed data
+pandas>=2.0.0,<3.0.0
+
+# Scientific algorithms and statistical functions
+# Used for: statistical tests (K-S test), interpolation (CubicSpline),
+# distributional analysis, hypothesis testing
+scipy>=1.10.0,<2.0.0
+
+# ==============================================================================
+# Deep Learning Framework - PyTorch Ecosystem
+# ==============================================================================
+
+# Primary deep learning framework for neural architecture implementation
+# Used for: LSTM, GRU, TCN, Transformers, automatic differentiation,
+# gradient-based bi-level optimization, modular neural networks
+torch>=2.0.0,<3.0.0
+
+# Note: torchvision and torchaudio are NOT required for this financial system
+# Only core torch is needed for sequence modeling and optimization
+
+# ==============================================================================
+# Machine Learning & Statistical Learning
+# ==============================================================================
+
+# General-purpose machine learning library
+# Used for: t-SNE manifold learning for latent space visualization,
+# dimensionality reduction for evaluation metrics
+scikit-learn>=1.3.0,<2.0.0
+
+# ==============================================================================
+# Financial Econometrics & Time-Series Analysis
+# ==============================================================================
+
+# Statistical models for econometric analysis
+# Used for: cointegration testing (Engle-Granger, Johansen),
+# stationarity tests (ADF), ARCH/GARCH modeling,
+# time-series decomposition, autocorrelation functions
+statsmodels>=0.14.0,<1.0.0
+
+# ==============================================================================
+# Visualization & Plotting
+# ==============================================================================
+
+# Comprehensive plotting library for scientific visualization
+# Used for: loss curves, distribution comparisons, latent space plots,
+# training diagnostics, stylized facts visualization
+matplotlib>=3.7.0,<4.0.0
+
+# ==============================================================================
+# Optional but Recommended: Enhanced Performance & Development Tools
+# ==============================================================================
+
+# Fast numerical expression evaluator (optional but recommended)
+# Provides significant speedup for complex array operations
+# numexpr>=2.8.0,<3.0.0
+
+# Jupyter support for interactive development and experimentation (optional)
+# jupyter>=1.0.0
+# ipython>=8.0.0
+# notebook>=6.5.0
+
+# Advanced optimization library for hyperparameter tuning (optional)
+# optuna>=3.0.0,<4.0.0
+
+# Weights & Biases for experiment tracking (optional)
+# wandb>=0.15.0,<1.0.0
+
+# TensorBoard for PyTorch training visualization (optional)
+# tensorboard>=2.13.0,<3.0.0
+
+# ==============================================================================
+# Development & Code Quality Tools (Development Environment Only)
+# ==============================================================================
+
+# Code formatting
+# black>=23.0.0,<24.0.0
+
+# Type checking
+# mypy>=1.4.0,<2.0.0
+
+# Linting
+# flake8>=6.0.0,<7.0.0
+# pylint>=2.17.0,<3.0.0
+
+# Testing framework
+# pytest>=7.4.0,<8.0.0
+# pytest-cov>=4.1.0,<5.0.0
+
+# ==============================================================================
+# System & Environment Information
+# ==============================================================================
+
+# Python Version: >=3.8,<3.12
+# CUDA Version (if using GPU): >=11.7 (for torch>=2.0.0)
+# Recommended OS: Linux (Ubuntu 20.04+), macOS 11+, Windows 10+
+
+# ==============================================================================
+# Installation Notes
+# ==============================================================================
+
+# 1. For CPU-only installation:
+#    pip install -r requirements.txt
+#
+# 2. For GPU installation (CUDA 11.7):
+#    pip install torch --index-url https://download.pytorch.org/whl/cu117
+#    pip install -r requirements.txt
+#
+# 3. For GPU installation (CUDA 12.1):
+#    pip install torch --index-url https://download.pytorch.org/whl/cu121
+#    pip install -r requirements.txt
+#
+# 4. For Apple Silicon (M1/M2) with MPS acceleration:
+#    pip install -r requirements.txt
+#    (PyTorch will automatically detect and use MPS backend)
+#
+# 5. Verify installation:
+#    python -c "import torch; print(f'PyTorch: {torch.__version__}')"
+#    python -c "import numpy; print(f'NumPy: {numpy.__version__}')"
+#    python -c "import pandas; print(f'Pandas: {pandas.__version__}')"
+#    python -c "import statsmodels; print(f'Statsmodels: {statsmodels.__version__}')"
+
+# ==============================================================================
+# Dependency Justification & Import Mapping
+# ==============================================================================
+
+# Standard Library (No External Dependencies Required):
+# - os: File system operations, path manipulation
+# - json: Configuration serialization, metadata storage
+# - pickle: Model checkpointing, object serialization
+# - logging: Structured logging, debug output
+# - math: Mathematical constants and functions
+# - random: Random number generation, seed management
+# - hashlib: Data provenance tracking, reproducibility hashing
+# - copy: Deep copying for parameter snapshots
+# - abc: Abstract base classes for modular architecture
+# - collections.deque: Experience replay buffer (RL)
+# - functools.partial: Partial function application
+# - dataclasses: Type-safe configuration objects
+# - typing: Type hints for code clarity and IDE support
+
+# External Package Import Mapping:
+# numpy -> numpy
+# pandas -> pandas
+# scipy.stats -> scipy
+# scipy.interpolate -> scipy
+# matplotlib.pyplot -> matplotlib
+# torch (all modules) -> torch
+# sklearn.manifold.TSNE -> scikit-learn
+# statsmodels.tsa.stattools.coint -> statsmodels
+
+# ==============================================================================
+# Known Compatibility Issues & Resolutions
+# ==============================================================================
+
+# Issue 1: NumPy 2.0.0 Breaking Changes
+# Resolution: Pin numpy<2.0.0 to avoid compatibility issues with pandas/scipy
+
+# Issue 2: PyTorch MPS Backend Limitations (Apple Silicon)
+# Resolution: Some operations may fall back to CPU; ensure torch>=2.0.0
+
+# Issue 3: Statsmodels Sparse Matrix Warnings
+# Resolution: These are harmless; consider upgrading to statsmodels>=0.14.0
+
+# ==============================================================================
+# Performance Optimization Recommendations
+# ==============================================================================
+
+# 1. Install Intel MKL for optimized BLAS/LAPACK operations:
+#    conda install mkl mkl-service (if using Anaconda)
+#
+# 2. Use NumExpr for accelerated numerical expressions:
+#    pip install numexpr
+#
+# 3. Enable PyTorch JIT compilation for inference:
+#    model = torch.jit.script(model)
+#
+# 4. Use mixed precision training (GPU only):
+#    from torch.cuda.amp import autocast, GradScaler
+
+# ==============================================================================
+# End of Requirements
+# ==============================================================================
